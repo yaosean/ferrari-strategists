@@ -25,20 +25,20 @@ public class TaskUI extends JFrame {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
             // Customize for sleek, web-like flat design with purple dark theme
-            UIManager.put("nimbusBase", new Color(128, 0, 128)); // purple
-            UIManager.put("nimbusBlueGrey", new Color(75, 0, 130)); // dark purple
-            UIManager.put("control", new Color(15, 10, 25)); // very dark purple near black
+            UIManager.put("nimbusBase", new Color(128, 0, 128));
+            UIManager.put("nimbusBlueGrey", new Color(75, 0, 130));
+            UIManager.put("control", new Color(15, 10, 25));
             UIManager.put("text", Color.WHITE);
             UIManager.put("nimbusLightBackground", new Color(25, 15, 35));
             UIManager.put("Panel.background", new Color(15, 10, 25));
             UIManager.put("Button.flat", Boolean.TRUE);
             UIManager.put("Button.border", BorderFactory.createEmptyBorder(10, 20, 10, 20));
-            UIManager.put("Button.background", Color.BLACK); // black buttons
+            UIManager.put("Button.background", Color.BLACK);
             UIManager.put("Button.foreground", Color.WHITE);
-            UIManager.put("TextField.border", BorderFactory.createLineBorder(new Color(120, 50, 150), 1)); // darker purple borders
+            UIManager.put("TextField.border", BorderFactory.createLineBorder(new Color(120, 50, 150), 1));
             UIManager.put("TextField.background", new Color(25, 15, 35));
             UIManager.put("TextField.foreground", Color.WHITE);
-            UIManager.put("TitledBorder.border", BorderFactory.createLineBorder(new Color(120, 50, 150), 1)); // same darker purple
+            UIManager.put("TitledBorder.border", BorderFactory.createLineBorder(new Color(120, 50, 150), 1));
             UIManager.put("List.background", new Color(15, 10, 25));
             UIManager.put("List.foreground", Color.WHITE);
             // Sleek fonts
