@@ -21,10 +21,8 @@ public class TaskUI extends JFrame {
     private LocalDate startDate;
 
     public TaskUI() {
-        // Set modern look and feel
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-            // Customize for sleek, web-like flat design with purple dark theme
             UIManager.put("nimbusBase", new Color(128, 0, 128));
             UIManager.put("nimbusBlueGrey", new Color(75, 0, 130));
             UIManager.put("control", new Color(15, 10, 25));
@@ -41,23 +39,19 @@ public class TaskUI extends JFrame {
             UIManager.put("TitledBorder.border", BorderFactory.createLineBorder(new Color(120, 50, 150), 1));
             UIManager.put("List.background", new Color(15, 10, 25));
             UIManager.put("List.foreground", Color.WHITE);
-            // Sleek fonts
             UIManager.put("Button.font", new Font("Verdana", Font.BOLD, 12));
             UIManager.put("Label.font", new Font("Verdana", Font.PLAIN, 12));
             UIManager.put("TextField.font", new Font("Verdana", Font.PLAIN, 12));
             UIManager.put("List.font", new Font("Verdana", Font.PLAIN, 12));
             SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception e) {
-            // Fallback to default look and feel
         }
 
-        // Input user name
         userName = JOptionPane.showInputDialog(this, "Enter your name:");
         if (userName == null || userName.trim().isEmpty()) {
             userName = "User";
         }
 
-        // Input start date
         String startDateStr = JOptionPane.showInputDialog(this, "Enter the current date (yyyy-MM-dd):");
         try {
             startDate = LocalDate.parse(startDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -77,11 +71,9 @@ public class TaskUI extends JFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
         add(tabbedPane, BorderLayout.CENTER);
 
-        // Tasks tab
         JPanel tasksPanel = new JPanel(new BorderLayout());
         tabbedPane.addTab("Tasks", tasksPanel);
 
-        // Input panel
         JPanel inputPanel = new JPanel(new GridLayout(6, 2, 5, 5));
         inputPanel.setBorder(BorderFactory.createTitledBorder("Add Task"));
 
@@ -111,18 +103,15 @@ public class TaskUI extends JFrame {
 
         tasksPanel.add(inputPanel, BorderLayout.NORTH);
 
-        // Task list
         taskList = new JList<>(listModel);
         JScrollPane scrollPane = new JScrollPane(taskList);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Tasks"));
         tasksPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Delete button
         JButton deleteButton = new JButton("Delete Selected");
         deleteButton.addActionListener(e -> deleteTask());
         tasksPanel.add(deleteButton, BorderLayout.SOUTH);
 
-        // Calendar tab
         JPanel calendarPanel = createCalendarPanel();
         tabbedPane.addTab("Calendar", calendarPanel);
 
@@ -132,7 +121,6 @@ public class TaskUI extends JFrame {
     private JPanel createCalendarPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Navigation panel
         JPanel navPanel = new JPanel(new FlowLayout());
         JButton prevButton = new JButton("<");
         prevButton.addActionListener(e -> changeMonth(-1));
@@ -148,8 +136,7 @@ public class TaskUI extends JFrame {
 
         panel.add(navPanel, BorderLayout.NORTH);
 
-        // Calendar grid
-        JPanel gridPanel = new JPanel(new GridLayout(7, 7)); // 7 days, 6 weeks + header
+        JPanel gridPanel = new JPanel(new GridLayout(7, 7));
         String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
         for (String day : days) {
             JLabel label = new JLabel(day, SwingConstants.CENTER);
@@ -161,16 +148,14 @@ public class TaskUI extends JFrame {
         int startDay = firstOfMonth.getDayOfWeek().getValue() % 7; // 0=Sun
         int daysInMonth = firstOfMonth.lengthOfMonth();
 
-        // Empty cells before first day
         for (int i = 0; i < startDay; i++) {
             gridPanel.add(new JLabel(""));
         }
 
-        // Days
         for (int day = 1; day <= daysInMonth; day++) {
             JButton dayButton = new JButton(String.valueOf(day));
-            dayButton.setPreferredSize(new Dimension(40, 40)); // make square
-            dayButton.setBorder(BorderFactory.createEmptyBorder()); // sleek, no border
+            dayButton.setPreferredSize(new Dimension(40, 40));
+            dayButton.setBorder(BorderFactory.createEmptyBorder());
             LocalDate date = LocalDate.of(currentYear, currentMonth, day);
             List<Task> tasksForDay = getTasksForDate(date);
             if (date.isBefore(startDate)) {
@@ -178,7 +163,7 @@ public class TaskUI extends JFrame {
                 dayButton.setBackground(Color.GRAY);
                 dayButton.setForeground(Color.DARK_GRAY);
             } else if (!tasksForDay.isEmpty()) {
-                dayButton.setBackground(new Color(120, 50, 150)); // highlight if has tasks
+                dayButton.setBackground(new Color(120, 50, 150));
                 dayButton.setForeground(Color.WHITE);
             } else {
                 dayButton.setBackground(Color.BLACK);
@@ -188,8 +173,7 @@ public class TaskUI extends JFrame {
             gridPanel.add(dayButton);
         }
 
-        // Fill remaining cells
-        int totalCells = 7 * 7; // header + 6 rows
+        int totalCells = 7 * 7;
         int usedCells = days.length + startDay + daysInMonth;
         for (int i = usedCells; i < totalCells; i++) {
             gridPanel.add(new JLabel(""));
@@ -213,7 +197,6 @@ public class TaskUI extends JFrame {
 
     private void updateCalendar() {
         monthLabel.setText(getMonthName(currentMonth) + " " + currentYear);
-        // Rebuild the calendar panel
         JTabbedPane tabbedPane = (JTabbedPane) getContentPane().getComponent(0);
         tabbedPane.setComponentAt(1, createCalendarPanel());
         tabbedPane.revalidate();
@@ -228,7 +211,7 @@ public class TaskUI extends JFrame {
     private List<Task> getTasksForDate(LocalDate date) {
         List<Task> result = new ArrayList<>();
         for (Task task : tasks) {
-            if (task.getDeadline() != null && task.getDeadline().equals(date)) {
+            if (task.deadline != null && task.deadline.equals(date)) {
                 result.add(task);
             }
         }
@@ -242,7 +225,7 @@ public class TaskUI extends JFrame {
         } else {
             StringBuilder sb = new StringBuilder("Tasks for " + date + ":\n");
             for (Task task : tasksForDay) {
-                sb.append("- ").append(task.getName()).append("\n");
+                sb.append("- ").append(task.name).append("\n");
             }
             JOptionPane.showMessageDialog(this, sb.toString());
         }
