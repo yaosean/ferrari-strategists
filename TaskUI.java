@@ -13,12 +13,14 @@ public class TaskUI extends JFrame {
     private JTextField descField;
     private JTextField deadlineField;
     private JTextField priorityField;
-    private JTextField pointsField;
     private int currentYear = LocalDate.now().getYear();
     private int currentMonth = LocalDate.now().getMonthValue();
     private JLabel monthLabel;
     private String userName;
     private LocalDate startDate;
+    private int totalPoints = 0;
+    private JLabel pointsLabel;
+    private JProgressBar progressBar;
 
     public TaskUI() {
         try {
@@ -74,7 +76,22 @@ public class TaskUI extends JFrame {
         JPanel tasksPanel = new JPanel(new BorderLayout());
         tabbedPane.addTab("Tasks", tasksPanel);
 
-        JPanel inputPanel = new JPanel(new GridLayout(6, 2, 5, 5));
+        JPanel pointsPanel = new JPanel(new GridLayout(2, 1, 5, 5));
+        pointsPanel.setBorder(BorderFactory.createTitledBorder("Weekly Goal Progress"));
+        
+        pointsLabel = new JLabel("Total Points: 0 / 100", SwingConstants.CENTER);
+        pointsLabel.setFont(new Font("Verdana", Font.BOLD, 14));
+        pointsPanel.add(pointsLabel);
+        
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(0);
+        progressBar.setStringPainted(true);
+        progressBar.setString("0%");
+        pointsPanel.add(progressBar);
+        
+        tasksPanel.add(pointsPanel, BorderLayout.NORTH);
+
+        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 5, 5));
         inputPanel.setBorder(BorderFactory.createTitledBorder("Add Task"));
 
         inputPanel.add(new JLabel("Task Name:"));
@@ -93,24 +110,30 @@ public class TaskUI extends JFrame {
         priorityField = new JTextField();
         inputPanel.add(priorityField);
 
-        inputPanel.add(new JLabel("Points:"));
-        pointsField = new JTextField();
-        inputPanel.add(pointsField);
-
         JButton addButton = new JButton("Add Task");
         addButton.addActionListener(e -> addTask());
         inputPanel.add(addButton);
 
-        tasksPanel.add(inputPanel, BorderLayout.NORTH);
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(inputPanel, BorderLayout.NORTH);
+        tasksPanel.add(centerPanel, BorderLayout.CENTER);
 
         taskList = new JList<>(listModel);
         JScrollPane scrollPane = new JScrollPane(taskList);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Tasks"));
-        tasksPanel.add(scrollPane, BorderLayout.CENTER);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
 
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        
+        JButton completeButton = new JButton("Complete Selected");
+        completeButton.addActionListener(e -> completeTask());
+        buttonPanel.add(completeButton);
+        
         JButton deleteButton = new JButton("Delete Selected");
         deleteButton.addActionListener(e -> deleteTask());
-        tasksPanel.add(deleteButton, BorderLayout.SOUTH);
+        buttonPanel.add(deleteButton);
+        
+        tasksPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         JPanel calendarPanel = createCalendarPanel();
         tabbedPane.addTab("Calendar", calendarPanel);
@@ -145,7 +168,7 @@ public class TaskUI extends JFrame {
         }
 
         LocalDate firstOfMonth = LocalDate.of(currentYear, currentMonth, 1);
-        int startDay = firstOfMonth.getDayOfWeek().getValue() % 7; // 0=Sun
+        int startDay = firstOfMonth.getDayOfWeek().getValue() % 7;
         int daysInMonth = firstOfMonth.lengthOfMonth();
 
         for (int i = 0; i < startDay; i++) {
@@ -264,22 +287,16 @@ public class TaskUI extends JFrame {
                 return;
             }
 
-            String pointsStr = pointsField.getText().trim();
-            if (pointsStr.isEmpty()) {
-                showError("Points cannot be empty");
-                return;
-            }
-            int points = Integer.parseInt(pointsStr);
+            int points = 10;
 
             Task task = new Task(name, desc, deadline, priority, points);
             tasks.add(task);
-            listModel.addElement(task.toString());
+            updateTaskList();
 
             nameField.setText("");
             descField.setText("");
             deadlineField.setText("");
             priorityField.setText("");
-            pointsField.setText("");
             nameField.requestFocus();
         } catch (NumberFormatException ex) {
             showError("Priority and Points must be numbers");
@@ -294,6 +311,57 @@ public class TaskUI extends JFrame {
         }
         tasks.remove(index);
         listModel.remove(index);
+        updateTaskList();
+    }
+    
+    private void completeTask() {
+        int index = taskList.getSelectedIndex();
+        if (index < 0) {
+            showError("Please select a task to complete");
+            return;
+        }
+        
+        Task task = tasks.get(index);
+        
+        if (task.isCompleted) {
+            showError("This task is already completed!");
+            return;
+        }
+        
+        task.isCompleted = true;
+        totalPoints += task.points;
+        
+        updateTaskList();
+        updatePointsDisplay();
+        
+        if (totalPoints >= 100) {
+            JOptionPane.showMessageDialog(this, 
+                "Congratulations! You've reached your weekly goal of 100 points!\nTotal Points: " + totalPoints,
+                "Goal Achieved!", 
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
+    private void updateTaskList() {
+        listModel.clear();
+        for (Task task : tasks) {
+            String status = task.isCompleted ? "[✓] " : "[ ] ";
+            listModel.addElement(status + task.toString());
+        }
+    }
+    
+    private void updatePointsDisplay() {
+        pointsLabel.setText("Total Points: " + totalPoints + " / 100");
+        progressBar.setValue(Math.min(totalPoints, 100));
+        progressBar.setString(Math.min(totalPoints, 100) + "%");
+        
+        if (totalPoints >= 100) {
+            progressBar.setForeground(new Color(50, 205, 50));
+        } else if (totalPoints >= 50) {
+            progressBar.setForeground(new Color(255, 165, 0));
+        } else {
+            progressBar.setForeground(new Color(120, 50, 150));
+        }
     }
 
     private void showError(String message) {
