@@ -6,21 +6,21 @@ import java.util.List;
 import javax.swing.*;
 
 public class TaskUI extends JFrame {
-    private List<Task> tasks = new ArrayList<>();
-    private DefaultListModel<String> listModel = new DefaultListModel<>();
-    private JList<String> taskList;
-    private JTextField nameField;
-    private JTextField descField;
-    private JTextField deadlineField;
-    private JTextField priorityField;
+    private final List<Task> tasks = new ArrayList<>();
+    private final DefaultListModel<String> listModel = new DefaultListModel<>();
+    private final JList<String> taskList;
+    private final JTextField nameField;
+    private final JTextField descField;
+    private final JTextField deadlineField;
+    private final JTextField priorityField;
     private int currentYear = LocalDate.now().getYear();
     private int currentMonth = LocalDate.now().getMonthValue();
     private JLabel monthLabel;
     private String userName;
     private LocalDate startDate;
     private int totalPoints = 0;
-    private JLabel pointsLabel;
-    private JProgressBar progressBar;
+    private final JLabel pointsLabel;
+    private final JProgressBar progressBar;
     private int popupYear;
     private int popupMonth;
 
@@ -47,21 +47,20 @@ public class TaskUI extends JFrame {
             UIManager.put("Label.font", new Font("Verdana", Font.PLAIN, 12));
             UIManager.put("TextField.font", new Font("Verdana", Font.PLAIN, 12));
             UIManager.put("List.font", new Font("Verdana", Font.PLAIN, 12));
-            SwingUtilities.updateComponentTreeUI(this);
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
         }
 
-        userName = JOptionPane.showInputDialog(this, "Enter your name:");
+        userName = JOptionPane.showInputDialog(null, "Enter your name:");
         if (userName == null || userName.trim().isEmpty()) {
             userName = "User";
         }
 
-        String startDateStr = JOptionPane.showInputDialog(this, "Enter the current date (yyyy-MM-dd):");
+        String startDateStr = JOptionPane.showInputDialog(null, "Enter the current date (yyyy-MM-dd):");
         try {
             startDate = LocalDate.parse(startDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         } catch (Exception e) {
             startDate = LocalDate.now();
-            JOptionPane.showMessageDialog(this, "Invalid date format. Using today's date.");
+            JOptionPane.showMessageDialog(null, "Invalid date format. Using today's date.");
         }
 
         setTitle("Task Manager 2025 - " + userName);
