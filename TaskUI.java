@@ -1,9 +1,9 @@
-import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
 
 public class TaskUI extends JFrame {
     private List<Task> tasks = new ArrayList<>();
@@ -21,6 +21,8 @@ public class TaskUI extends JFrame {
     private int totalPoints = 0;
     private JLabel pointsLabel;
     private JProgressBar progressBar;
+    private int popupYear;
+    private int popupMonth;
 
     public TaskUI() {
         try {
@@ -103,8 +105,14 @@ public class TaskUI extends JFrame {
         inputPanel.add(descField);
 
         inputPanel.add(new JLabel("Deadline (yyyy-MM-dd):"));
+        JPanel deadlinePanel = new JPanel(new BorderLayout());
         deadlineField = new JTextField();
-        inputPanel.add(deadlineField);
+        deadlinePanel.add(deadlineField, BorderLayout.CENTER);
+        JButton calendarButton = new JButton("...");
+        calendarButton.setPreferredSize(new Dimension(30, 20));
+        calendarButton.addActionListener(e -> showCalendarPopup());
+        deadlinePanel.add(calendarButton, BorderLayout.EAST);
+        inputPanel.add(deadlinePanel);
 
         inputPanel.add(new JLabel("Priority (1-5):"));
         priorityField = new JTextField();
@@ -362,6 +370,104 @@ public class TaskUI extends JFrame {
         } else {
             progressBar.setForeground(new Color(120, 50, 150));
         }
+    }
+
+    private void showCalendarPopup() {
+        popupYear = currentYear;
+        popupMonth = currentMonth;
+        JDialog dialog = new JDialog(this, "Select Date", true);
+        dialog.setSize(300, 250);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel navPanel = new JPanel(new FlowLayout());
+        JButton prevButton = new JButton("<");
+        JButton nextButton = new JButton(">");
+        JLabel popupMonthLabel = new JLabel(getMonthName(popupMonth) + " " + popupYear, SwingConstants.CENTER);
+        popupMonthLabel.setFont(new Font("Verdana", Font.BOLD, 16));
+
+        prevButton.addActionListener(e -> {
+            popupMonth--;
+            if (popupMonth < 1) {
+                popupMonth = 12;
+                popupYear--;
+            }
+            updatePopupCalendar(dialog, panel, popupMonthLabel);
+        });
+        navPanel.add(prevButton);
+
+        navPanel.add(popupMonthLabel);
+
+        nextButton.addActionListener(e -> {
+            popupMonth++;
+            if (popupMonth > 12) {
+                popupMonth = 1;
+                popupYear++;
+            }
+            updatePopupCalendar(dialog, panel, popupMonthLabel);
+        });
+        navPanel.add(nextButton);
+
+        panel.add(navPanel, BorderLayout.NORTH);
+
+        updatePopupCalendar(dialog, panel, popupMonthLabel);
+
+        dialog.add(panel);
+        dialog.setVisible(true);
+    }
+
+    private void updatePopupCalendar(JDialog dialog, JPanel panel, JLabel monthLabel) {
+        monthLabel.setText(getMonthName(popupMonth) + " " + popupYear);
+        // Remove old grid if exists
+        if (panel.getComponentCount() > 1) {
+            panel.remove(1);
+        }
+
+        JPanel gridPanel = new JPanel(new GridLayout(7, 7));
+        String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        for (String day : days) {
+            JLabel label = new JLabel(day, SwingConstants.CENTER);
+            label.setFont(new Font("Verdana", Font.BOLD, 12));
+            gridPanel.add(label);
+        }
+
+        LocalDate firstOfMonth = LocalDate.of(popupYear, popupMonth, 1);
+        int startDay = firstOfMonth.getDayOfWeek().getValue() % 7;
+        int daysInMonth = firstOfMonth.lengthOfMonth();
+
+        for (int i = 0; i < startDay; i++) {
+            gridPanel.add(new JLabel(""));
+        }
+
+        for (int day = 1; day <= daysInMonth; day++) {
+            JButton dayButton = new JButton(String.valueOf(day));
+            dayButton.setPreferredSize(new Dimension(30, 30));
+            dayButton.setBorder(BorderFactory.createEmptyBorder());
+            LocalDate date = LocalDate.of(popupYear, popupMonth, day);
+            if (date.isBefore(startDate)) {
+                dayButton.setEnabled(false);
+                dayButton.setBackground(Color.GRAY);
+            } else {
+                dayButton.setBackground(Color.BLACK);
+                dayButton.setForeground(Color.WHITE);
+                dayButton.addActionListener(e -> {
+                    deadlineField.setText(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                    dialog.dispose();
+                });
+            }
+            gridPanel.add(dayButton);
+        }
+
+        int totalCells = 7 * 7;
+        int usedCells = days.length + startDay + daysInMonth;
+        for (int i = usedCells; i < totalCells; i++) {
+            gridPanel.add(new JLabel(""));
+        }
+
+        panel.add(gridPanel, BorderLayout.CENTER);
+        panel.revalidate();
+        panel.repaint();
     }
 
     private void showError(String message) {
