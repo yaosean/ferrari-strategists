@@ -1,8 +1,11 @@
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sound.sampled.*;
 import javax.swing.*;
 
 public class TaskUI extends JFrame {
@@ -305,6 +308,7 @@ public class TaskUI extends JFrame {
             deadlineField.setText("");
             priorityField.setText("");
             nameField.requestFocus();
+            playSound("add.wav");
         } catch (NumberFormatException ex) {
             showError("Priority and Points must be numbers");
         }
@@ -319,6 +323,7 @@ public class TaskUI extends JFrame {
         tasks.remove(index);
         listModel.remove(index);
         updateTaskList();
+        playSound("delete.wav");
     }
     
     private void completeTask() {
@@ -346,6 +351,9 @@ public class TaskUI extends JFrame {
                 "Congratulations! You've reached your weekly goal of 100 points!\nTotal Points: " + totalPoints,
                 "Goal Achieved!", 
                 JOptionPane.INFORMATION_MESSAGE);
+            playSound("goal.wav");
+        } else {
+            playSound("complete.wav");
         }
     }
     
@@ -471,6 +479,22 @@ public class TaskUI extends JFrame {
 
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void playSound(String soundFile) {
+        try {
+            File file = new File(soundFile);
+            if (file.exists()) {
+                AudioInputStream audioIn = AudioSystem.getAudioInputStream(file);
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioIn);
+                clip.start();
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            Toolkit.getDefaultToolkit().beep();
+        }
     }
 
     public static void main(String[] args) {
